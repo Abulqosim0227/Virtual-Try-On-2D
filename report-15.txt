@@ -1,0 +1,53 @@
+Date: March 18, 2026
+Session: Day 15
+
+WHAT WAS DONE
+=============
+1. Installed detectron2 successfully (was told impossible — worked first try)
+2. Set up full original CatVTON repo as ComfyUI custom node
+3. Integrated OpenPose (controlnet_aux) for arm keypoint detection
+4. Built pose-based arm fill function:
+   - Detects shoulder/elbow/wrist keypoints via OpenPose
+   - Draws filled polygon from shoulder to wrist (10% image width)
+   - Runs AFTER hem clamp so nothing erases it
+5. Fixed hem clamp: removed Belt from protect list (was eating torso bottom)
+6. Fixed dense area resolution: fx=0.25→0.5, dilation 2→3 iterations
+
+RESULTS
+=======
+BLONDE (front-facing, normal pose):
+  - EXCELLENT quality — Adidas logo, stripes, collar, full sleeves
+  - No black artifacts, clean hands, jeans preserved
+  - This is demo-ready
+
+BRUNETTE (arm behind body, diagonal pose):
+  - Mask now covers both arms (OpenPose arm fill works)
+  - Torso clean, pants preserved
+  - Still has black cuffs at wrists — CatVTON model limitation
+  - This specific pose is the hardest case
+
+CONCLUSION: CatVTON works well on normal poses. Difficult poses
+(arm behind body, extreme angles) have artifacts at wrist boundaries.
+This is a model limitation, not a mask issue.
+
+CURRENT PIPELINE (ComfyUI):
+  DensePose (detectron2) → body surface mapping
+  SCHP ATR + LIP → clothing/body parsing
+  OpenPose → arm keypoints (safety net)
+  Mask: DensePose regions + SCHP labels + pose arm fill + hem clamp
+  Pipeline: CatVTON mix checkpoint, bf16, 50 steps, cfg 2.5
+
+TEST IMAGES AVAILABLE:
+  datasets/viton-hd-sample/image/ — 6 women (VITON-HD)
+  datasets/viton-hd-sample/cloth/ — 6 garments
+  Note: VITON-HD is women-only. Need DressCode or custom images for men.
+
+COMFYUI: http://localhost:8188 — load any person + garment, queue, get result
+
+WHAT'S NEXT
+===========
+Tomorrow:
+1. Test with more diverse images (different poses, body types)
+2. Find men's test images (DressCode or custom)
+3. If quality is acceptable for demos, start building the web UI backend
+4. Port the working ComfyUI masker back to our FastAPI pipeline

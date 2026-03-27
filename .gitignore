@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+*.egg
+dist/
+build/
+.eggs/
+
+# Virtual environment
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Environment
+.env
+.env.local
+
+# ML weights and datasets (large files)
+weights/
+datasets/
+*.pt
+*.pth
+*.onnx
+*.safetensors
+*.bin
+!tests/fixtures/**
+
+# Results and temp
+results/
+tmp/
+*.log
+
+# Docker
+.docker/
+
+# Node / Next.js
+web/node_modules/
+web/.next/
+web/out/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/

@@ -1,0 +1,47 @@
+Date: March 17, 2026
+Session: Day 5
+
+WHAT WAS DONE
+=============
+Completed all remaining files. Project skeleton is 100% implemented.
+
+NEW FILES WITH CODE:
+1.  src/vto/db/session.py — engine, SessionLocal, get_db() dependency, create_tables()
+2.  src/vto/db/models.py — Garment and Job SQLAlchemy tables
+3.  scripts/download_weights.py — HuggingFace weight downloader for all models
+4.  scripts/benchmark.py — GPU benchmark (VRAM peak, latency min/avg/max)
+5.  scripts/evaluate.py — golden test set evaluation (SSIM, LPIPS, threshold checks)
+6.  src/vto/pipeline/preprocessors/dwpose.py — DWPose pose estimation (controlnet_aux)
+7.  src/vto/pipeline/preprocessors/schp.py — SCHP human parsing (18 regions)
+8.  src/vto/pipeline/preprocessors/rmbg.py — RMBG-2.0 background removal (transformers)
+9.  src/vto/pipeline/models/catvton.py — CatVTON Tier 1 (Diffusers, fp16, torch.compile)
+10. src/vto/pipeline/models/idm_vton.py — IDM-VTON Tier 2 (accelerate CPU offload)
+11. tests/unit/test_preprocessors.py — 7 tests for preprocessor interface
+
+IMPORTANT NOTE:
+RTX 5070 Ti (Blackwell) requires PyTorch nightly with CUDA 12.8+.
+Install: pip install --pre torch torchvision --index-url https://download.pytorch.org/whl/nightly/cu128
+
+TEST RESULTS:
+59 tests, 59 passed, 0 failed (6.92 seconds)
+  - Unit: 32 (context: 8, normalizer: 12, cache: 5, preprocessors: 7)
+  - Integration: 27 (health: 4, errors: 9, tryon: 8, garments: 6)
+
+FILE STATUS:
+  - 47 total files
+  - 34 with real code
+  - 13 empty __init__.py (correct — package markers)
+  - 0 remaining empty files
+
+PROJECT IS FULLY SCAFFOLDED.
+
+WHAT'S NEXT
+===========
+Move to the RTX 5070 Ti RDP machine and:
+1. Install PyTorch nightly (CUDA 12.8)
+2. pip install -e ".[ml,dev]"
+3. python scripts/download_weights.py --all
+4. python scripts/benchmark.py --model catvton --runs 10
+5. Adjust CatVTON pipeline API calls based on real model behavior
+6. Run full test suite on GPU machine
+7. Set up Redis and test caching end-to-end

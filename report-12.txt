@@ -1,0 +1,69 @@
+Date: March 18, 2026
+Session: Day 12
+
+WHAT WAS DONE
+=============
+1. BIG CHANGE review — Architecture section (4 issues identified):
+   Issue 1: Masking approach (SCHP-only -> DensePose+SCHP)
+   Issue 2: Missing repaint step (added)
+   Issue 3: Garment-aware mask shaping (future)
+   Issue 4: Static inference params (tiered: fast vs hd)
+
+2. Research phase:
+   - CatVTON-MaskFree: exists but has documented quality issues
+   - detectron2: will NOT build on PyTorch 2.9.1 + CUDA 12.8 + Blackwell
+   - DensePose-TorchScript: pre-exported model found on HuggingFace
+     (hr16/DensePose-TorchScript-with-hint-image)
+   - No detectron2 needed at inference — just torch.jit.load()
+   - True mask-free models (MFTON, MF-VITON): papers only, no weights
+
+3. Implemented Issue 2 (repaint step):
+   - _repaint() function: alpha-blends result onto original person using mask
+   - Preserves original background, pants, face perfectly
+   - 12 lines of code
+
+4. Implemented Issue 4 (tiered inference params):
+   - TIER_PARAMS dict: fast (25 steps, guidance 2.5, blur 5) vs hd (50 steps, guidance 3.5, blur 4)
+   - blur_factor reduced from 9 to 5/4 for better collar preservation
+
+5. Implemented Issue 1 (DensePose integration):
+   - Downloaded pre-exported DensePose TorchScript (271MB, no detectron2)
+   - Tested: loads at 257MB VRAM, inference 471MB peak, fp32 required
+   - Rewrote masker.py: AutoMasker class with DensePose + dual SCHP
+   - Matches CatVTON's production cloth_masker.py logic exactly:
+     * Strong protect: hands+feet (DensePose) intersected with SCHP arm labels + face
+     * Weak protect: hair, accessories, irrelevant body parts, irrelevant clothes
+     * Mask area: clothing labels (SCHP) + body surface regions (DensePose)
+     * Convex hull, Gaussian blur, final dilation
+
+6. v5 Results (DensePose+SCHP+repaint+tiered params):
+   - brunette_wears_red_adidas: EXCELLENT. Logo, stripes, collar preserved. No side strip. Clean hands.
+   - blonde_wears_red_adidas: EXCELLENT. All details preserved.
+   - blonde_wears_black_longsleeve: Good. Clean transition.
+   - redshirt_wears_black_longsleeve: Hardest case. Torso correct but right arm still shows red bleed. Model limitation (high-contrast transfer).
+
+QUALITY COMPARISON (brunette + red Adidas across versions):
+  v1 (manual mask): White artifacts, garment misaligned
+  v2 (SCHP only): Right arm missing, side gaps
+  v3 (SCHP + arms + h-fill): Better but hand color bleed
+  v4 (SCHP + repaint): Background fixed but arm artifacts persist
+  v5 (DensePose + SCHP + repaint): Clean hands, no side strip, logo visible
+
+VRAM BUDGET:
+  CatVTON pipeline: 1,818 MB
+  SCHP (ATR + LIP): 516 MB
+  DensePose TorchScript: 256 MB
+  Total loaded: 2,590 MB
+  Peak during inference: 4,433 MB
+  Free on 16GB: 11.6 GB
+
+FILES CHANGED:
+  - src/vto/pipeline/models/catvton_lib/masker.py — REWRITTEN (AutoMasker with DensePose)
+  - src/vto/pipeline/models/catvton.py — repaint step, tiered params, AutoMasker integration
+
+WHAT'S NEXT
+===========
+- Continue BIG CHANGE review: Section 2 (Code Quality), Section 3 (Tests), Section 4 (Performance)
+- Issue 3 (sleeve length detection from cloth image) — still pending
+- Test with more diverse poses and garment types
+- Start Next.js web UI

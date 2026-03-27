@@ -1,0 +1,44 @@
+Date: March 17, 2026
+Session: Day 7
+
+WHAT WAS DONE
+=============
+1. Cloned CatVTON GitHub repo, studied inference.py and pipeline.py
+2. Discovered CatVTON uses custom pipeline (NOT standard Diffusers inpainting)
+   - CatVTONPipeline: VAE + UNet + custom SkipAttnProcessor
+   - Base model: SD 1.5 inpainting (booksforcharlie/stable-diffusion-inpainting)
+   - VAE: stabilityai/sd-vae-ft-mse
+   - Inputs: person image, garment (condition_image), agnostic mask
+   - Returns: list of PIL Images
+
+3. Created catvton_lib/ with 4 files adapted from CatVTON source:
+   - src/vto/pipeline/models/catvton_lib/__init__.py
+   - src/vto/pipeline/models/catvton_lib/pipeline.py (CatVTONPipeline)
+   - src/vto/pipeline/models/catvton_lib/attn_processor.py (SkipAttnProcessor)
+   - src/vto/pipeline/models/catvton_lib/model_utils.py (init_adapter)
+   - src/vto/pipeline/models/catvton_lib/image_utils.py (prepare_image, etc.)
+
+4. Rewrote catvton.py to use real CatVTONPipeline
+
+5. FIRST REAL INFERENCE ON RTX 5070 Ti:
+   - Load VRAM: 1.78 GB (estimate was 4GB — much better!)
+   - Peak VRAM: 3.58 GB (leaves 12GB headroom on 16GB)
+   - Inference time: 48s (first run, includes torch.compile warmup)
+   - Output: 768x1024 RGB image
+   - Clean VRAM release: 0.01 GB after unload
+
+6. All 59 tests still passing
+
+BENCHMARK SUMMARY (RTX 5070 Ti, CatVTON vitonhd, fp16):
+  Load VRAM:  1.78 GB
+  Peak VRAM:  3.58 GB
+  First run:  48s (torch.compile warmup)
+  Headroom:   12.3 GB free during inference
+
+WHAT'S NEXT
+===========
+1. Run benchmark with multiple inferences to get steady-state latency
+2. Test with real VITON-HD images (not dummy)
+3. Run SCHP preprocessing (bundled with CatVTON weights)
+4. Wire real CatVTON into VRAMManager + Router for full API test
+5. Generate first real try-on result with person + garment

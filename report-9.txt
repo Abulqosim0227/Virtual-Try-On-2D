@@ -1,0 +1,41 @@
+Date: March 18, 2026
+Session: Day 9
+
+WHAT WAS DONE
+=============
+1. Downloaded 5 VITON-HD test pairs from HuggingFace (person, cloth, agnostic)
+
+2. First real image test failed — agnostic image was used as mask directly
+   - agnostic-v3.2 is a visualization (grey overlay), not a binary mask
+   - CatVTON expects binary mask: white = replace, black = keep
+
+3. Converted agnostic image to binary mask:
+   - Grey pixels (R,G,B similar, value 80-200) -> white
+   - Everything else -> black
+   - Clean binary mask covering upper body clothing region
+
+4. PAIRED TEST (same garment): Near-perfect reconstruction
+   - Person 00006 + cloth 00006 + proper mask
+   - Result looks identical to input — confirms pipeline works correctly
+
+5. UNPAIRED TEST (different garment): Real virtual try-on!
+   - Person 00006 (black top) + cloth 00008 (red Adidas jersey)
+   - Result: red Adidas on the person, logo preserved, stripes preserved
+   - Face/hair/skin/pants all untouched
+   - Minor artifact at waist (mask edge issue, not model issue)
+   - Quality: production-ready for demo
+
+6. Consistent 7.7-7.8s per inference, VRAM peak 3,660 MB
+
+KEY FINDING:
+The pipeline needs automatic mask generation from SCHP parsing.
+Currently we rely on pre-made agnostic masks from the dataset.
+For API use with arbitrary photos, SCHP must generate the mask.
+This is the CatVTON repo's own approach (app.py uses SCHP+DensePose).
+
+WHAT'S NEXT
+===========
+1. Integrate SCHP (bundled in weights/catvton/SCHP/) for automatic mask generation
+2. Enable full pipeline: upload any person photo -> SCHP mask -> CatVTON -> result
+3. Start Next.js web UI
+4. Set up Redis for caching

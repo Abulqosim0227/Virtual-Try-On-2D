@@ -1,0 +1,44 @@
+Date: March 18, 2026
+Session: Day 8
+
+WHAT WAS DONE
+=============
+1. Benchmarked CatVTON at different denoising steps:
+   - 20 steps: 6.3s
+   - 25 steps: 7.7s  <-- new Tier 1 default
+   - 30 steps: 9.1s
+   - 50 steps: 15.0s
+   - VRAM peak: 3,660 MB (same regardless of steps)
+
+2. Updated catvton.py: 50 steps -> 25 steps (nearly 2x faster)
+
+3. Updated docs with measured numbers:
+   - pipeline.md: Tier 1 latency 7-8s (was 3-8s estimate)
+   - hardware.md: CatVTON VRAM 1.8GB loaded, 3.66GB peak (was 4GB estimate)
+
+4. Wired CatVTON into full FastAPI stack:
+   - main.py lifespan: registers CatVTON, falls back to mock if weights missing
+   - TIER_MODEL_MAP set to active model at startup
+   - Clean VRAM release on shutdown
+
+5. FULL API END-TO-END WITH REAL CATVTON:
+   - Server started on port 8899
+   - Health: CatVTON loaded, 1818MB VRAM, GPU detected
+   - POST /v1/tryon/fast: 14.3s first request (warmup), 7.5-7.6s steady state
+   - Error paths working: 401 for bad key, structured errors for bad images
+   - Result images saved to /tmp/vto-results/
+
+6. All 59 tests still passing
+
+API TEST RESULTS:
+  Request 1: 14,319ms (warmup)
+  Request 2: 7,560ms (steady state)
+  Request 3: 7,613ms (consistent)
+
+WHAT'S NEXT
+===========
+1. Download VITON-HD test pairs for quality evaluation
+2. Test with real person + garment photos (not dummy colors)
+3. Set up Redis for caching (duplicate requests skip GPU)
+4. Build the Next.js web UI (Phase 1 Week 5-6)
+5. Run golden test set evaluation with scripts/evaluate.py

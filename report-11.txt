@@ -1,0 +1,41 @@
+Date: March 18, 2026
+Session: Day 11
+
+WHAT WAS DONE
+=============
+1. Friend identified masking issue: arms not included in mask for upper clothing
+   - SCHP-only masker was protecting arms instead of masking them
+   - Original CatVTON uses DensePose to mask ['torso', 'big arms', 'forearms']
+   - Without DensePose, we lost arm coverage
+
+2. Fixed masker.py (3 changes):
+   - Added Left-arm, Right-arm to MASK_CLOTH_PARTS for 'upper' and 'overall'
+   - Added morphological closing + horizontal row fill to bridge torso-arm gaps
+   - Increased dilation (2 iterations, elliptical kernel) for shoulder/armpit coverage
+   - Added _horizontal_fill(): fills between leftmost/rightmost white pixel per row
+
+3. Tested on 2 person-garment pairs:
+   - Person 00006 + Cloth 00008 (red Adidas): much better arm coverage, minor edge artifact at waist
+   - Person 00017 + Cloth 00006 (black long-sleeve on short-sleeve person): sleeves generated correctly, natural look
+
+4. All results at C:\Users\Admin\Desktop\Virtual-Try-On\datasets\viton-hd-sample\:
+   - result_v3_00006_cloth08.jpg (red Adidas on person 6)
+   - result_v3_00017_cloth06.jpg (black long-sleeve on person 17)
+   - debug_mask_v3_00006.png (the improved mask)
+
+QUALITY COMPARISON (person 00006 + red Adidas):
+  v1 (manual grey-to-binary mask): white artifacts, garment not aligned
+  v2 (SCHP automasker, no arms): right arm missing, side gaps
+  v3 (SCHP + arms + horizontal fill): both arms covered, natural fit
+
+REMAINING MINOR ISSUES:
+  - Small black strip at waist boundary (mask edge, not model issue)
+  - Would be fully fixed with DensePose (Phase 2)
+  - Good enough for demo quality
+
+WHAT'S NEXT
+===========
+1. Start Next.js web UI
+2. Set up Redis caching
+3. Test with more diverse poses
+4. Consider DensePose integration for production quality

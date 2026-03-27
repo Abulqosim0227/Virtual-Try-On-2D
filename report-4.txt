@@ -1,0 +1,46 @@
+Date: March 17, 2026
+Session: Day 4
+
+WHAT WAS DONE
+=============
+Wrote API routes, schemas, wired up main.py, wrote all tests.
+
+NEW FILES WITH CODE:
+1. src/vto/api/schemas/tryon.py — TryOnFastResponse, TryOnHDResponse
+2. src/vto/api/schemas/jobs.py — JobStatusResponse
+3. src/vto/api/schemas/garments.py — GarmentResponse, GarmentListResponse
+4. src/vto/api/routes/tryon.py — POST /tryon/fast, POST /tryon/hd
+5. src/vto/api/routes/jobs.py — GET /jobs/{job_id}
+6. src/vto/api/routes/garments.py — POST/GET/DELETE /garments
+7. src/vto/main.py — REWRITTEN: lifespan, exception handlers, app.state wiring
+8. tests/conftest.py — test app factory, MockVTOModel, fixtures
+9. tests/unit/test_context.py — 8 tests
+10. tests/unit/test_normalizer.py — 12 tests
+11. tests/unit/test_cache.py — 5 tests
+12. tests/integration/test_health_api.py — 4 tests
+13. tests/integration/test_error_handling.py — 9 tests
+14. tests/integration/test_tryon_api.py — 8 tests
+15. tests/integration/test_garments_api.py — 6 tests
+
+BUGS FOUND AND FIXED:
+1. vram_manager.py: total_mem -> total_memory (PyTorch API)
+2. conftest.py: lifespan was overwriting test fixtures (created test app factory)
+3. garments.py + tryon.py: Form() annotation needed for multipart form fields
+
+TEST RESULTS:
+52 tests, 52 passed, 0 failed (6.83 seconds)
+  - Unit tests: 25 (context: 8, normalizer: 12, cache: 5)
+  - Integration tests: 27 (health: 4, errors: 9, tryon: 8, garments: 6)
+
+TOTAL FILES WITH CODE: 31 of 47
+
+WHAT'S NEXT
+===========
+Remaining empty files to implement:
+- src/vto/pipeline/preprocessors/dwpose.py, schp.py, rmbg.py (real ML models)
+- src/vto/pipeline/models/catvton.py, idm_vton.py (real ML models)
+- src/vto/db/models.py, session.py (database layer)
+- scripts/evaluate.py, benchmark.py, download_weights.py
+- tests/unit/test_preprocessors.py
+
+Next milestone: download CatVTON weights and benchmark on RTX 5070 Ti.

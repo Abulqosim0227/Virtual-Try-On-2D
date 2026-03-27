@@ -1,0 +1,55 @@
+Date: March 17, 2026
+Session: Day 3
+
+WHAT WAS DONE
+=============
+Wrote 5 more files — wiring the pipeline together end to end.
+
+1. src/vto/core/router.py
+   - Router class: handle() entry point for all requests
+   - Cache check first (skip GPU if hit)
+   - Preprocessing -> inference -> cache result
+   - VRAM cleanup in finally block
+   - Per-stage timing (preprocessing, model_swap, inference, total)
+   - TIER_MODEL_MAP: single place to swap which model serves which tier
+
+2. src/vto/pipeline/runner.py
+   - build_context(): raw request bytes -> normalized TryOnContext
+   - Calls normalizer (validate, EXIF strip, resize 768x1024)
+   - Computes SHA256 cache key on original bytes
+
+3. src/vto/pipeline/postprocess.py
+   - postprocess(): brightness matching between result and input person
+   - Per-channel mean scaling, clamped 0.8-1.2 to prevent overcorrection
+   - No-op if result_image is None
+
+4. src/vto/api/routes/health.py
+   - GET /health endpoint, no auth required
+   - Returns VRAM used/total, loaded models, Redis status, uptime
+   - Uses request.app.state for dependency access (FastAPI standard pattern)
+
+5. Installed Python dependencies in WSL (pip --user)
+   - pydantic, pillow, numpy, structlog, redis, pytest, httpx, ruff
+
+TESTS RUN
+=========
+All imports verified (16 modules).
+Functional tests:
+- Normalizer: resize, EXIF strip, format validation, oversized rejection
+- TryOnContext: field validation, invalid category/tier rejection
+- MockVTOModel: generates blurred output at correct size
+- Cache key: SHA256, 64-char hex
+- Signed URLs: HMAC generation + tamper detection
+- Full pipeline: build_context -> mock inference -> postprocess
+All passed.
+
+TOTAL FILES WITH CODE: 21 of 47
+
+WHAT'S NEXT
+===========
+- src/vto/api/routes/tryon.py: POST /tryon/fast and POST /tryon/hd
+- src/vto/api/routes/jobs.py: GET /jobs/{job_id}
+- src/vto/api/routes/garments.py: garment CRUD
+- src/vto/api/schemas/tryon.py, jobs.py, garments.py: request/response models
+- Wire up main.py startup (init VRAMManager, cache, storage on app.state)
+- Write proper pytest tests in tests/unit/ and tests/integration/

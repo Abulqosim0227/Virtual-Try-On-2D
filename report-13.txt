@@ -1,0 +1,46 @@
+Date: March 18, 2026
+Session: Day 13
+
+WHAT WAS DONE
+=============
+1. Deep research into CatVTON internals:
+   - Pipeline uses vertical latent concatenation (person + garment stacked on height axis)
+   - No text conditioning at all (SkipAttnProcessor bypasses cross-attention)
+   - All garment info comes from spatial concatenation, not attention
+   - vitonhd checkpoint trained at 512x384, mix at 1024x768
+
+2. Found 3 bugs in our integration:
+   a) Wrong checkpoint: vitonhd (512x384 training) at 1024x768 resolution -> FIXED to mix
+   b) Wrong precision: fp16 -> FIXED to bf16 (what app.py uses)
+   c) Double resize: our normalizer resized to 768x1024 with BLACK padding,
+      then pipeline resized again -> FIXED: normalizer no longer resizes,
+      pipeline handles its own resize (crop for person, WHITE pad for cloth)
+
+3. Removed repaint step (app.py doesn't use it, only inference.py optionally)
+
+4. Tested inference.py exact flow with VaeImageProcessor.preprocess() tensor input
+
+5. Quality assessment across all versions:
+   - v1-v4: SCHP-only masker, various hacks, consistently bad
+   - v5: DensePose TorchScript + SCHP, better but still artifacts
+   - v6-v7: mix checkpoint + bf16, better than vitonhd but still not matching their demos
+
+HONEST ASSESSMENT
+=================
+CatVTON's demo images on GitHub are cherry-picked results with their exact
+detectron2 DensePose (which we can't install on our stack). Our TorchScript
+DensePose produces similar but not identical segmentation. The mask quality
+gap between our TorchScript version and their original detectron2 version
+may explain the remaining artifacts.
+
+Options going forward:
+1. Accept current quality (good for some poses, bad for others) and build the web UI
+2. Try a completely different model (FASHN-VTON, Re-CatVTON, etc.)
+3. Set up detectron2 in a Docker container for one-time DensePose mask generation
+
+FILES CHANGED:
+- src/vto/pipeline/models/catvton.py (mix, bf16, no repaint)
+- src/vto/core/normalizer.py (removed resize, validate+EXIF only)
+- tests/unit/test_normalizer.py (updated for no-resize)
+
+58 tests passing.

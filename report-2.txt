@@ -1,0 +1,57 @@
+Date: March 17, 2026
+Session: Day 2
+
+WHAT WAS DONE
+=============
+Wrote 9 core files — the foundation that everything else builds on.
+
+1. src/vto/pipeline/context.py
+   - TryOnContext Pydantic model
+   - All fields: person_image, garment_image, category, cache_key, tier,
+     pose_keypoints, parsed_mask, garment_mask, result_image, timings, model_used
+
+2. src/vto/pipeline/models/base.py
+   - BaseVTOModel ABC: name, load(), unload(), generate(), vram_estimate_mb()
+
+3. src/vto/pipeline/preprocessors/base.py
+   - BasePreprocessor ABC: name, load(), unload(), process(), vram_estimate_mb()
+
+4. src/vto/pipeline/models/mock.py
+   - MockVTOModel: returns blurred person image, 0 VRAM
+   - For API testing without GPU
+
+5. src/vto/core/normalizer.py
+   - normalize_image(): validate format, strip EXIF, RGB, resize+pad to 768x1024
+   - compute_cache_key(): SHA256 on original bytes
+   - Raises InvalidInputError on bad input
+
+6. src/vto/core/cache.py
+   - ResultCache: Redis wrapper with get/set/exists
+   - Graceful degradation: cache miss on Redis failure, never crash
+   - Keys prefixed vto:result:, configurable TTL
+
+7. src/vto/core/storage.py
+   - ResultStorage: save results to temp dir, signed URLs with HMAC-SHA256
+   - verify_signature() with timing-attack-safe comparison
+   - cleanup_expired() for hourly cleanup job
+
+8. src/vto/core/vram_manager.py
+   - VRAMManager singleton: register, load, unload, swap models
+   - asyncio.Lock prevents concurrent model swaps
+   - ensure_loaded() swaps generation models, catches OOM
+   - cleanup() empties CUDA cache + gc.collect()
+   - VRAM stats for health endpoint
+
+FILES FROM DAY 1 (already existed):
+   - pyproject.toml, .env.example, config.py, main.py
+   - exceptions.py, deps.py, schemas/common.py
+
+TOTAL FILES WITH CODE: 16 of 47
+
+WHAT'S NEXT
+===========
+- src/vto/core/router.py: cache check -> tier selection -> run pipeline
+- src/vto/pipeline/runner.py: orchestrate preprocess -> synthesize -> postprocess
+- src/vto/pipeline/postprocess.py: color correction, result saving
+- src/vto/api/routes/health.py: first working endpoint
+- Then: test files to verify everything works with MockVTOModel

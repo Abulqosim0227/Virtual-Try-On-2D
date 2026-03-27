@@ -1,0 +1,39 @@
+Date: March 26, 2026
+Session: Day 16
+
+WHAT WAS DONE
+=============
+1. Batch tested CatVTON on 10 random person+cloth combinations
+   - Result: 80%+ good quality — acceptable for product
+   - Results at: datasets/viton-hd-sample/results/batch_test/
+
+2. Researched 3D virtual try-on:
+   - TripoSR: tested, fast (2.5s) but TERRIBLE quality for humans (blobby mesh)
+   - Era3D: good for multi-view, needs specific torch version (incompatible)
+   - Zero123++ v1.2: downloading (5GB), generates 6 consistent views from 1 image
+   - MV-VTON: multi-view try-on, 292 stars, needs investigation
+   - ComfyUI-3D-Pack: cloned but complex install
+
+3. 3D Pipeline Plan:
+   Person photo + Garment → CatVTON (15s) → Zero123++ (10s) → 6 views → browser turntable
+   Total: ~25 seconds per try-on with 3D rotation
+
+4. Zero123++ v1.2 model downloading (~5GB)
+   - Diffusers compatibility issue with current version
+   - Need to load pipeline manually or use the repo's custom code
+
+STATUS
+======
+- CatVTON 2D: working, 80%+ quality
+- TripoSR 3D: tested and rejected (bad quality for humans)
+- Zero123++ multi-view: downloading, untested
+- ComfyUI with CatVTON: working at localhost:8188
+- FastAPI backend: 58 tests passing
+
+WHAT'S NEXT
+===========
+1. Test Zero123++ when download completes
+2. If quality is good → build the turntable viewer
+3. If not → try Era3D with pinned diffusers version or MV-VTON
+4. Build web UI with Three.js/turntable viewer
+5. Connect CatVTON + multi-view to FastAPI backend

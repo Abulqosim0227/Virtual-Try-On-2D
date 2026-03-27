@@ -1,0 +1,52 @@
+Date: March 18, 2026
+Session: Day 10
+
+WHAT WAS DONE
+=============
+1. Diagnosed quality issue: agnostic image != binary mask
+   - CatVTON expects binary mask (white=replace, black=keep)
+   - Dataset agnostic-v3.2 is a visualization, not a mask
+
+2. Studied CatVTON's production masking pipeline (app.py + cloth_masker.py)
+   - Uses AutoMasker: SCHP (ATR + LIP parsing) + DensePose
+   - Combines clothing detection, body part protection, convex hull, dilation, blur
+   - DensePose requires detectron2 (heavy dependency)
+
+3. Implemented SCHP-only masker (no DensePose dependency):
+   - Copied SCHP module from CatVTON (4 files: network, transforms, init)
+   - Created SCHPMasker class: loads ATR + LIP models, generates binary mask
+   - Mask logic: identify clothing regions, protect face/hair/accessories, convex hull, dilate, blur
+   - Integrated into CatVTON model: auto-generates mask from any person photo
+
+4. Files created:
+   - src/vto/pipeline/models/catvton_lib/schp/__init__.py (SCHP wrapper)
+   - src/vto/pipeline/models/catvton_lib/schp/networks/__init__.py
+   - src/vto/pipeline/models/catvton_lib/schp/networks/AugmentCE2P.py (ResNet101)
+   - src/vto/pipeline/models/catvton_lib/schp/utils/__init__.py
+   - src/vto/pipeline/models/catvton_lib/schp/utils/transforms.py
+   - src/vto/pipeline/models/catvton_lib/masker.py (SCHPMasker)
+   - Updated: src/vto/pipeline/models/catvton.py (auto-masking integrated)
+
+5. REAL IMAGE TEST WITH AUTO-MASKING:
+   - Person 00006 + Cloth 00008 (red Adidas jersey)
+   - SCHP masking: ~4.5s
+   - CatVTON inference: ~7.8s
+   - Total: 12.3s
+   - VRAM: 2,334 MB loaded, 4,176 MB peak
+   - Quality: significantly better than manual mask. Face/hair/pants preserved.
+   - Garment fits naturally, stripes transferred correctly.
+
+BENCHMARK UPDATE:
+  VRAM loaded (CatVTON + SCHP): 2,334 MB
+  VRAM peak (masking + inference): 4,176 MB
+  Total time per request: ~12s (masking + inference)
+  Headroom: 11.8 GB free on 16GB GPU
+
+All 59 tests passing.
+
+WHAT'S NEXT
+===========
+1. Start Next.js web UI (Phase 1 Week 5-6 milestone)
+2. Set up Redis for caching (skip GPU on duplicate requests)
+3. Test with more diverse images (different body types, poses)
+4. Consider adding DensePose later for better torso coverage

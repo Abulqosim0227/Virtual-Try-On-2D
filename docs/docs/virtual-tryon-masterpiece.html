@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Virtual Try-On Masterpiece Plan</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    :root {
+      --bg: #06070d;
+      --panel: #101320;
+      --panel-2: #13182a;
+      --border: #242d4d;
+      --text: #eaf0ff;
+      --muted: #9aa9d6;
+      --purple: #8b7bff;
+      --teal: #37d5c6;
+      --pink: #ff8fb1;
+      --yellow: #ffd06b;
+      --green: #6ee7a6;
+      --shadow: 0 16px 36px rgba(0,0,0,0.35);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: Inter, -apple-system, Segoe UI, Roboto, sans-serif;
+      background: radial-gradient(circle at 15% 10%, #1a1f38 0%, transparent 35%),
+                  radial-gradient(circle at 90% 0%, #0f2b2a 0%, transparent 30%),
+                  var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      overflow-x: hidden;
+    }
+
+    .container { width: min(1200px, 92vw); margin: 0 auto; }
+    section { padding: 78px 0; }
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #2a3356, transparent);
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      color: var(--purple);
+      border: 1px solid #3a4580;
+      background: rgba(139, 123, 255, 0.08);
+      border-radius: 999px;
+      padding: 8px 14px;
+      margin-bottom: 14px;
+      font-weight: 700;
+    }
+
+    h1 {
+      font-size: clamp(2.5rem, 5.8vw, 5.1rem);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+      margin-bottom: 18px;
+      font-weight: 900;
+    }
+
+    h2 {
+      font-size: clamp(1.8rem, 3.4vw, 2.8rem);
+      line-height: 1.18;
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+      font-weight: 800;
+    }
+
+    p.lead {
+      color: var(--muted);
+      font-size: 1.08rem;
+      max-width: 780px;
+      margin-bottom: 30px;
+    }
+
+    .hero {
+      min-height: 92vh;
+      display: flex;
+      align-items: center;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 26px;
+      align-items: stretch;
+    }
+
+    .grad-1 {
+      background: linear-gradient(130deg, #9b90ff 0%, #50f0de 92%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card {
+      padding: 26px;
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .metric {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .metric div {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid #2a355a;
+      border-radius: 12px;
+      padding: 14px;
+    }
+    .metric strong {
+      font-size: 1.15rem;
+      display: block;
+      color: #dff7ff;
+      margin-bottom: 3px;
+    }
+    .metric span { color: var(--muted); font-size: 0.86rem; }
+
+    .cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 10px;
+    }
+    .btn {
+      border: 1px solid #3a4a80;
+      color: #dce7ff;
+      background: #1b2443;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-weight: 600;
+      font-size: 0.92rem;
+    }
+    .btn.primary {
+      background: linear-gradient(135deg, #7b6bff, #36d9ca);
+      border-color: transparent;
+      color: #05141f;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .card {
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #11172a;
+    }
+    .card h3 {
+      margin-bottom: 6px;
+      font-size: 1.06rem;
+    }
+    .card p { color: var(--muted); font-size: 0.92rem; }
+
+    .pipeline {
+      margin-top: 22px;
+      display: grid;
+      grid-template-columns: repeat(5, minmax(180px, 1fr));
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+    .stage {
+      min-width: 180px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #0f1628;
+    }
+    .stage b {
+      display: inline-block;
+      width: 28px; height: 28px;
+      border-radius: 999px;
+      text-align: center;
+      line-height: 28px;
+      margin-bottom: 8px;
+      background: rgba(139,123,255,0.2);
+      color: #d9d0ff;
+    }
+    .stage h4 { font-size: 0.98rem; margin-bottom: 6px; }
+    .stage ul { padding-left: 18px; color: var(--muted); font-size: 0.86rem; }
+
+    .tier-wrap {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+      margin-top: 24px;
+    }
+    .tier {
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px solid #2a3a63;
+      background: linear-gradient(180deg, #10172b, #0d1424);
+    }
+    .tier h3 { margin-bottom: 8px; font-size: 1.03rem; }
+    .pill {
+      display: inline-block;
+      padding: 4px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      letter-spacing: 0.3px;
+    }
+    .p0 { background: rgba(110,231,166,0.15); color: var(--green); border: 1px solid rgba(110,231,166,0.35); }
+    .p1 { background: rgba(55,213,198,0.14); color: var(--teal); border: 1px solid rgba(55,213,198,0.35); }
+    .p2 { background: rgba(255,143,177,0.14); color: var(--pink); border: 1px solid rgba(255,143,177,0.35); }
+    .p3 { background: rgba(255,208,107,0.14); color: var(--yellow); border: 1px solid rgba(255,208,107,0.35); }
+
+    .table-wrap {
+      margin-top: 20px;
+      overflow: auto;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 760px;
+      background: #0d1426;
+    }
+    th, td {
+      padding: 12px 13px;
+      border-bottom: 1px solid #263358;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+    th { color: #d8e7ff; background: #14203b; font-weight: 700; }
+    td { color: var(--muted); }
+
+    .split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .list-box {
+      padding: 18px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #0f1629;
+    }
+    .list-box h3 { margin-bottom: 9px; font-size: 1.02rem; }
+    .list-box ul { padding-left: 18px; color: var(--muted); font-size: 0.9rem; }
+
+    .timeline {
+      margin-top: 24px;
+      display: grid;
+      gap: 12px;
+    }
+    .phase {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #10182e;
+      padding: 16px;
+    }
+    .phase h3 {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+    .phase small {
+      color: #bed4ff;
+      border: 1px solid #35507e;
+      border-radius: 999px;
+      padding: 3px 8px;
+      font-size: 11px;
+      font-weight: 700;
+    }
+    .phase ul { padding-left: 18px; color: var(--muted); font-size: 0.88rem; }
+
+    .kpi {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 12px;
+    }
+    .kpi .box {
+      border: 1px solid #2f3a62;
+      border-radius: 12px;
+      background: #0f1527;
+      padding: 14px;
+    }
+    .kpi .box strong {
+      font-size: 1.2rem;
+      display: block;
+      margin-bottom: 4px;
+      color: #defff5;
+    }
+    .kpi .box span {
+      font-size: 0.83rem;
+      color: var(--muted);
+    }
+
+    .footer {
+      text-align: center;
+      color: #8ea2d4;
+      font-size: 0.9rem;
+      padding: 42px 0 60px;
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid { grid-template-columns: 1fr; }
+      .split { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <div class="tag">Master Plan + Visual Strategy</div>
+        <h1><span class="grad-1">Virtual Try-On</span><br/>Masterpiece Architecture</h1>
+        <p class="lead">
+          A single powerful product vision combining pitch-level clarity with execution-grade engineering:
+          multi-tier inference, hybrid model ensemble, real-time + high-quality modes, and scale-ready system design.
+        </p>
+        <div class="cta">
+          <span class="btn primary">Fast Preview in 1–3s</span>
+          <span class="btn">Final Quality in 5–30s</span>
+          <span class="btn">Live Video Mode</span>
+        </div>
+      </div>
+
+      <div class="panel hero-card">
+        <h3 style="font-size:1.02rem;">North-Star Targets</h3>
+        <div class="metric">
+          <div><strong>&lt; 500ms</strong><span>First visual feedback</span></div>
+          <div><strong>15–30 FPS</strong><span>Video mode target</span></div>
+          <div><strong>1–3 sec</strong><span>Tier-1 cloud preview</span></div>
+          <div><strong>5–30 sec</strong><span>Tier-2 HQ generation</span></div>
+        </div>
+        <p style="color:var(--muted);font-size:.9rem;">
+          Strategy: deliver instant confidence first, then upscale to premium quality in background.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <div class="container">
+      <div class="tag">Problem + Opportunity</div>
+      <h2>Why This Product Wins</h2>
+      <p class="lead">Combine conversion impact, customer trust, and technology moat into one platform for fashion commerce.</p>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Return Reduction</h3>
+          <p>Virtual confidence before purchase reduces fit uncertainty and expensive reverse logistics.</p>
+        </div>
+        <div class="card">
+          <h3>Conversion Lift</h3>
+          <p>Interactive try-on increases engagement and cart intent compared to static catalog browsing.</p>
+        </div>
+        <div class="card">
+          <h3>Regional Differentiation</h3>
+          <p>Localized fashion data, sizing behavior, and language UX create defensible advantage in the Uzbek market.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <div class="container">
+      <div class="tag">Core Pipeline</div>
+      <h2>5-Stage Processing Engine</h2>
+      <p class="lead">One unified pipeline with optional branches by device, latency budget, and output quality.</p>
+      <div class="pipeline">
+        <div class="stage">
+          <b>1</b>
+          <h4>Preprocess</h4>
+          <ul>
+            <li>Person & garment normalization</li>
+            <li>Pose + parsing maps</li>
+            <li>Optional garment segmentation</li>
+          </ul>
+        </div>
+        <div class="stage">
+          <b>2</b>
+          <h4>Alignment</h4>
+          <ul>
+            <li>Flow/TPS or implicit alignment</li>
+            <li>Body-shape-aware mapping</li>
+            <li>Occlusion handling</li>
+          </ul>
+        </div>
+        <div class="stage">
+          <b>3</b>
+          <h4>Synthesis</h4>
+          <ul>
+            <li>Fast path: cacheable/light models</li>
+            <li>HQ path: diffusion + refinement</li>
+            <li>Pattern/logo preservation</li>
+          </ul>
+        </div>
+        <div class="stage">
+          <b>4</b>
+          <h4>Temporal Mode</h4>
+          <ul>
+            <li>Video model or frame-wise stream</li>
+            <li>Consistency smoothing</li>
+            <li>Low-latency transport</li>
+          </ul>
+        </div>
+        <div class="stage">
+          <b>5</b>
+          <h4>Delivery</h4>
+          <ul>
+            <li>Post-processing + upscale</li>
+            <li>CDN + signed result URLs</li>
+            <li>Cache by input hash</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <div class="container">
+      <div class="tag">Multi-Tier Architecture</div>
+      <h2>Not One Model. Intelligent Routing.</h2>
+      <p class="lead">The orchestrator chooses the right tier by user intent, device capability, queue pressure, and cost policy.</p>
+      <div class="tier-wrap">
+        <div class="tier">
+          <span class="pill p0">Tier 0</span>
+          <h3>On-Device (Mobile)</h3>
+          <p>Use DM-VTON / Mobile-VTON for privacy-first instant previews. Best for mobile apps and poor networks.</p>
+        </div>
+        <div class="tier">
+          <span class="pill p1">Tier 1</span>
+          <h3>Fast Cloud Preview</h3>
+          <p>FastFit / CatVTON / FASHN-VTON for 1–3s response. This is the default path for most web sessions.</p>
+        </div>
+        <div class="tier">
+          <span class="pill p2">Tier 2</span>
+          <h3>Premium Quality</h3>
+          <p>IDM-VTON / OOTDiffusion / DualFit / DS-VTON as async jobs for final export-level outputs.</p>
+        </div>
+        <div class="tier">
+          <span class="pill p3">Video</span>
+          <h3>Live / Video Try-On</h3>
+          <p>Lucy 2.0 / MagicTryOn-style path for high-fidelity temporal rendering and live camera experiences.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <div class="container">
+      <div class="tag">Model Ensemble</div>
+      <h2>Model Matrix (Combined Strategy)</h2>
+      <p class="lead">Each model family has a role. This matrix avoids magical assumptions and enforces purpose-driven composition.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Model / Family</th>
+              <th>Primary Role</th>
+              <th>Speed</th>
+              <th>Quality</th>
+              <th>Tier</th>
+              <th>Risk / Note</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>DM-VTON / Mobile-VTON</td><td>On-device preview</td><td>Very Fast</td><td>Good</td><td>Tier 0</td><td>Needs mobile optimization pipeline</td></tr>
+            <tr><td>CatVTON / FASHN-VTON</td><td>Cloud quick result</td><td>Fast</td><td>Good</td><td>Tier 1</td><td>May miss tiny garment details</td></tr>
+            <tr><td>FastFit (cacheable)</td><td>Latency reduction</td><td>Fast+</td><td>High</td><td>Tier 1</td><td>Integration complexity</td></tr>
+            <tr><td>IDM-VTON / OOTDiffusion</td><td>Premium detail output</td><td>Slow</td><td>High</td><td>Tier 2</td><td>Cost and licensing constraints</td></tr>
+            <tr><td>DualFit / DS-VTON</td><td>Warp + synthesis fidelity</td><td>Medium</td><td>High</td><td>Tier 2</td><td>Heavier preprocessing requirement</td></tr>
+            <tr><td>Lucy / MagicTryOn path</td><td>Temporal realism</td><td>Real-time</td><td>High</td><td>Video</td><td>Expensive GPU minute cost</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <div class="container">
+      <div class="tag">Orchestrator Brain</div>
+      <h2>Routing Rules That Keep UX Fast</h2>
+      <div class="split">
+        <div class="list-box">
+          <h3>Decision Inputs</h3>
+          <ul>
+            <li>User intent: preview vs final export vs live video</li>
+            <li>Device profile: mobile power, browser support, connection quality</li>
+            <li>Queue health: GPU utilization and current p95 wait</li>
+            <li>Cache hit state: person/garment hash reuse</li>
+            <li>Budget policy: per-session inference cost guardrails</li>
+          </ul>
+        </div>
+        <div class="list-box">
+          <h3>Routing Outputs</h3>
+          <ul>
+            <li>Immediate Tier-1 preview response</li>
+            <li>Parallel Tier-2 async enqueue (optional)</li>
+            <li>Fallback to reduced resolution under load</li>
+            <li>Video path isolation from image queue starvation</li>
+            <li>Graceful degradation instead of user-visible failure</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <div class="container">
+      <div class="tag">Execution Roadmap</div>
+      <h2>Build Plan in 6 Phases</h2>
+      <p class="lead">A practical order that validates value early and postpones expensive complexity until traction is proven.</p>
+      <div class="timeline">
+        <div class="phase">
+          <h3>Phase 1 — Foundation <small>Weeks 1-3</small></h3>
+          <ul><li>Ingestion API, storage, preprocessing service, baseline evaluation set.</li><li>Pose/parsing + canonical image normalization.</li></ul>
+        </div>
+        <div class="phase">
+          <h3>Phase 2 — Tier 1 Launch <small>Weeks 4-6</small></h3>
+          <ul><li>Fast cloud model + cache + web UI flow.</li><li>Target: stable 1–3 second preview path.</li></ul>
+        </div>
+        <div class="phase">
+          <h3>Phase 3 — Orchestrator + Queue <small>Weeks 7-9</small></h3>
+          <ul><li>Routing engine, async workers, retry/fallback policies.</li><li>Progressive delivery (preview first, HQ later).</li></ul>
+        </div>
+        <div class="phase">
+          <h3>Phase 4 — Tier 2 Quality <small>Weeks 10-12</small></h3>
+          <ul><li>Integrate HQ diffusion path and benchmark quality/cost tradeoffs.</li><li>Download-ready outputs and signed links.</li></ul>
+        </div>
+        <div class="phase">
+          <h3>Phase 5 — Video Path <small>Weeks 13-15</small></h3>
+          <ul><li>Add live/video try-on service with temporal consistency constraints.</li><li>Isolate video GPU pools from image workloads.</li></ul>
+        </div>
+        <div class="phase">
+          <h3>Phase 6 — Scale & Market Fit <small>Weeks 16+</small></h3>
+          <ul><li>Uzbek catalog integrations, analytics loops, AB tests, monetization modes.</li><li>Fine-tune data strategy and enterprise API packaging.</li></ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <div class="container">
+      <div class="tag">KPI Command Center</div>
+      <h2>Metrics That Decide Success</h2>
+      <div class="kpi">
+        <div class="box"><strong>&lt; 3s</strong><span>Tier-1 p95 response time</span></div>
+        <div class="box"><strong>&lt; 35s</strong><span>Tier-2 p95 completion time</span></div>
+        <div class="box"><strong>&gt; 30%</strong><span>Preview-to-cart interaction lift goal</span></div>
+        <div class="box"><strong>&lt; 2%</strong><span>Inference error rate target</span></div>
+        <div class="box"><strong>&gt; 4.2/5</strong><span>User realism feedback score</span></div>
+        <div class="box"><strong>-15%+</strong><span>Return-rate reduction target</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <div class="container">
+      <div class="tag">Risk Register</div>
+      <h2>Known Risks + Mitigation</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>Latency Spikes</h3>
+          <p>Mitigate with queue backpressure, tier fallback, regional inference pools, and cache-first returns.</p>
+        </div>
+        <div class="card">
+          <h3>Model Drift / Artifacts</h3>
+          <p>Keep golden test set, visual diff checks, periodic offline eval, and canary deploy strategy.</p>
+        </div>
+        <div class="card">
+          <h3>Cost Overrun</h3>
+          <p>Set per-route budget policy; use progressive delivery to avoid sending every request to expensive tier paths.</p>
+        </div>
+        <div class="card">
+          <h3>Privacy & Compliance</h3>
+          <p>Auto-delete policy, signed URLs, encryption-at-rest, audit logs, and optional on-prem enterprise mode.</p>
+        </div>
+        <div class="card">
+          <h3>Licensing Constraints</h3>
+          <p>Track model-level commercial rights and maintain swappable model adapters in architecture.</p>
+        </div>
+        <div class="card">
+          <h3>Vendor Dependency</h3>
+          <p>Avoid lock-in with standardized inference contracts and dual provider strategy for video endpoints.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section>
+    <div class="container">
+      <div class="tag">Business Strategy</div>
+      <h2>Monetization Layers</h2>
+      <div class="grid-3">
+        <div class="card">
+          <h3>SaaS API for Stores</h3>
+          <p>Charge by monthly package + overage per generation request.</p>
+        </div>
+        <div class="card">
+          <h3>White-Label Deployments</h3>
+          <p>Brand-ready implementations for major marketplaces and retailers.</p>
+        </div>
+        <div class="card">
+          <h3>Consumer Premium</h3>
+          <p>HD export, outfit history, closet memory, and social sharing packs.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container footer">
+    <p><strong>Virtual Try-On Masterpiece Plan</strong> — Combined from visual pitch thinking + deep system architecture.</p>
+    <p style="margin-top:6px;">Ready for product design, engineering kickoff, and investor discussion.</p>
+  </div>
+</body>
+</html>

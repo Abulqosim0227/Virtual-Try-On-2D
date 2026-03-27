@@ -1,0 +1,56 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vto"
+version = "0.1.0"
+description = "Virtual Try-On — AI-powered garment try-on for Uzbek e-commerce"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.1.0",
+    "redis>=5.0.0",
+    "slowapi>=0.1.9",
+    "sqlalchemy>=2.0.25",
+    "psycopg2-binary>=2.9.9",
+    "python-multipart>=0.0.9",
+    "structlog>=24.1.0",
+    "sentry-sdk[fastapi]>=1.40.0",
+    "Pillow>=10.2.0",
+    "numpy>=1.26.0",
+]
+
+[project.optional-dependencies]
+ml = [
+    "torch>=2.2.0",
+    "torchvision>=0.17.0",
+    "diffusers>=0.27.0",
+    "accelerate>=0.27.0",
+    "transformers>=4.38.0",
+    "safetensors>=0.4.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "httpx>=0.27.0",
+    "ruff>=0.3.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]

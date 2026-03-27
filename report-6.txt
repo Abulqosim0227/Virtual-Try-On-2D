@@ -1,0 +1,44 @@
+Date: March 17, 2026
+Session: Day 6
+
+WHAT WAS DONE
+=============
+1. Verified environment:
+   - PyTorch 2.9.1 + CUDA 12.8 already installed
+   - RTX 5070 Ti detected, 15.9GB VRAM
+   - torch.compile available
+
+2. Installed ML dependencies:
+   - diffusers 0.37.0
+   - accelerate 1.12.0
+   - controlnet_aux 0.0.10
+   - safetensors 0.7.0
+   - Fixed pyOpenSSL/boto3 conflict with accelerate
+
+3. Downloaded CatVTON weights (1.4GB):
+   - weights/catvton/ — 3 checkpoints (vitonhd-16k-512, mix-48k-1024, dresscode-16k-512)
+   - Bundled SCHP (2 checkpoints) and DensePose model
+   - flux-lora weights also included
+
+4. Analyzed CatVTON repo structure:
+   - Uses SD 1.5 inpainting as base (Diffusers compatible)
+   - Needs agnostic-mask (clothing region), not raw SCHP output
+   - Has custom inference code, NOT standard Diffusers pipeline
+   - Bundles its own SCHP + DensePose preprocessing
+
+5. All 59 tests still passing after ML dep install
+
+DISCOVERY: CATVTON PIPELINE NEEDS REWORK
+=========================================
+Our catvton.py assumed standard StableDiffusionInpaintPipeline.
+Reality: CatVTON has custom pipeline code in their GitHub repo.
+Need to clone the repo, study inference.py/app.py, and rewrite
+our model adapter to match.
+
+WHAT'S NEXT
+===========
+1. Clone CatVTON GitHub repo, study inference.py and app.py
+2. Rewrite src/vto/pipeline/models/catvton.py to use their actual API
+3. Adapt preprocessing: CatVTON bundles SCHP, may simplify our pipeline
+4. Run first real inference on the 5070 Ti
+5. Benchmark: VRAM peak, latency, output quality

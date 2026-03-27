@@ -1,0 +1,47 @@
+Date: March 18, 2026
+Session: Day 14
+
+WHAT WAS DONE
+=============
+1. Installed detectron2 successfully (research said it wouldn't work — it did)
+2. Set up full CatVTON repo as ComfyUI custom node with:
+   - Original detectron2 DensePose
+   - Original SCHP (ATR + LIP)
+   - Original cloth_masker.py pipeline
+   - Added OpenPose for arm keypoints (controlnet_aux)
+   - Added pose-based arm fill function
+   - Added hem clamp for pants protection
+   - Added SCHP arm labels to MASK_CLOTH_PARTS
+
+3. ComfyUI running at localhost:8188 with CatVTON workflow
+
+CURRENT STATE
+=============
+The arm fill function IS running (debug confirmed):
+- OpenPose detects all 6 keypoints correctly
+- Keypoints are in correct coordinate space
+- _pose_arm_fill function is called
+
+BUT the result still shows black left arm. The latest fix moved arm fill
+to run AFTER hem clamp — needs testing to verify if that's the final issue.
+
+ROOT CAUSES IDENTIFIED TODAY
+============================
+1. Original CatVTON MASK_CLOTH_PARTS['upper'] doesn't include arm labels
+2. DensePose dense_area downscale (fx=0.25) destroys thin diagonal arms
+3. Hem clamp was erasing arm fill that ran before it
+4. DensePose weights were missing from ComfyUI node (silently failing)
+
+WHAT NEEDS TO HAPPEN NEXT
+=========================
+The user wants to stop patching and do a proper architectural review.
+The mask pipeline has been modified many times without a clear plan.
+
+Options:
+A) Do the BIG CHANGE review properly — understand the full mask data flow,
+   identify ALL issues, fix them in one clean pass
+B) Try a completely different model (FASHN-VTON — no mask needed)
+C) Accept current quality for demo, build web UI, revisit masking later
+
+58 tests passing in the main project.
+ComfyUI running with CatVTON + DensePose + SCHP + OpenPose.
